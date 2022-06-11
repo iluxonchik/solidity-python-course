@@ -1,0 +1,21 @@
+dotenv: .env
+# dependencies is how we setup Brownie to download packages from GitHub
+dependencies:
+  # - <orginaziation/repo>@<version>
+  - smartcontractkit/chainlink-brownie-contracts@1.1.1
+compiler:
+  solc:
+    remappings:
+      # here, we are telling Brownie to replace "@chainlink" with "smartcontractkit/chainlink-brownie-contracts@1.1.1"
+      # in the source code of the smart contracts. this is again because Brownie does not support downloading packages from NPM,
+      # but it does from GitHub. so we are are doing a replace of NPM pointer to a GitHub pointer, but only during compilation,
+      # without chagning the original source code
+      - "@chainlink=smartcontractkit/chainlink-brownie-contracts@1.1.1"
+wallets:
+  from_key: ${PRIVATE_KEY}
+networks:
+  rinkeby:
+    eth_usd_price_feed: "0x5a9813c93e61aC6348E2455EBD91f7AeE3a64F12"
+    verify: True
+  development:
+    verify: False
