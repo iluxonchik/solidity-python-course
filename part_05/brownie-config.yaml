@@ -14,8 +14,12 @@ compiler:
 wallets:
   from_key: ${PRIVATE_KEY}
 networks:
+  default: ganache-local
   rinkeby:
     eth_usd_price_feed: "0x5a9813c93e61aC6348E2455EBD91f7AeE3a64F12"
     verify: True
+  mainnet-fork-dev:
+    eth_usd_price_feed: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"
+    verify: False
   development:
     verify: False
