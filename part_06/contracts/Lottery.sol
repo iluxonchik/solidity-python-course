@@ -20,7 +20,16 @@ contract Lottery {
     }
 
     function getEntranceFee() public view returns (uint256) {
-        //
+        (, int256 price, , , , ) = ethUsdPriceFeed.latestRoundData();
+        uint256 adjustedPrice = uint256(price) * 10**18; // 18 decimals
+
+        // solidity doesn't work with decinmals, so we need to do some convertions
+        // https://ethereum.stackexchange.com/questions/35150/how-to-store-a-float-or-decimal-in-a-contract
+
+        // 1 either = 10 ** 18 wei, i.e., 1 ether in wei has 18 decimal places
+        // https://docs.ethers.io/v5/api/utils/display-logic/#:~:text=A%20Unit%20can%20be%20specified,bitcoin%20represents%20108%20satoshi)
+        uint256 costToEnter = (usdEntryFee * 10**18) / adjustedPrice;
+        return costToEnter;
     }
 
     function startLottery() public {}
