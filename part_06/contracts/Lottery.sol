@@ -58,7 +58,7 @@ contract Lottery is VRFConsumerBase, Ownable {
 
     function getEntranceFee() public view returns (uint256) {
         (, int256 price, , , ) = ethUsdPriceFeed.latestRoundData();
-        uint256 adjustedPrice = uint256(price) * 10**18; // 18 decimals
+        uint256 adjustedPrice = uint256(price) * 10**10; // 18 decimals
 
         // solidity doesn't work with decinmals, so we need to do some convertions
         // https://ethereum.stackexchange.com/questions/35150/how-to-store-a-float-or-decimal-in-a-contract
