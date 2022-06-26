@@ -29,7 +29,7 @@ contract Lottery is VRFConsumerBase, Ownable {
     // address vs address payable:
     //     * you can call .transfer() and .send() on a payable address, but not on an address
     address payable[] public players;
-    address payable recentWinner;
+    address payable public recentWinner;
     uint256 recentRandomNumber;
     uint256 public usdEntryFee;
     AggregatorV3Interface internal ethUsdPriceFeed;
