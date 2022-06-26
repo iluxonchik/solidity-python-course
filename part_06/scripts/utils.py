@@ -6,6 +6,7 @@ from brownie import (
     Contract,
     VRFCoordinatorMock,
     LinkToken,
+    interface,
 )
 from web3 import Web3
 
@@ -64,3 +65,19 @@ def deploy_mocks(decimals=DECIMALS, initial_value=INITIAL_VALUE):
     link_token = LinkToken.deploy({"from": account})
     VRFCoordinatorMock.deploy(link_token.address, {"from": account})
     print("Mock deployed")
+
+
+def fund_contract_with_link(
+    contract_addr, account=None, link_token=None, amount=100000000000000000
+):
+    account = account if account is not None else get_account()
+    link_token = link_token if link_token is not None else get_contract("link_token")
+    # transfer() vs spend(): https://ethereum.stackexchange.com/questions/19341/address-send-vs-address-transfer-best-practice-usage
+    # instread of doing Contract.from_abi(), we can also use interfaces
+    tx = link_token.transfer(contract_addr, amount, {"from": account})
+    # interface version:
+    # link_token_contract = interface.LinkTokenInterface(link_token.address)
+    # tx = link_token_contract.transfer(contract_addr, amount, {"from": account})
+    tx.wait(1)
+    print("Contract funded with link")
+    return tx

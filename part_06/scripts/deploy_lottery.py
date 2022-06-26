@@ -1,5 +1,6 @@
 from brownie import Lottery, network, config
-from .utils import get_account, get_contract
+from .utils import get_account, get_contract, fund_contract_with_link
+import time
 
 
 def deploy_lottery():
@@ -15,5 +16,43 @@ def deploy_lottery():
     )
 
 
+def start_lottery():
+    account = get_account()
+    lottery = Lottery[-1]
+    tx = lottery.startLottery({"from": account})
+    tx.wait(1)
+    print("Lottery started!")
+
+
+def enter_lottery():
+    account = get_account()
+    lottery = Lottery[-1]
+    value_to_send: int = lottery.getEntranceFee() + 100000000
+    tx = lottery.enter(
+        {
+            "from": account,
+            "value": value_to_send,
+        }
+    )
+    tx.wait(1)
+    print("Entered the lottery")
+
+
+def end_lottery():
+    account = get_account()
+    lottery = Lottery[-1]
+    # fund the contract with LINK. we need it because we get the random number through ChainLink
+    # in that contract
+    tx = fund_contract_with_link(lottery.address)
+    tx.wait(1)
+    ending_tx = lottery.endLottery({"from": account})
+    ending_tx.wait(1)
+    time.sleep(60)
+    print(f"{lottery.recentWinner()} is the new winner")
+
+
 def main():
     deploy_lottery()
+    start_lottery()
+    enter_lottery()
+    end_lottery()
