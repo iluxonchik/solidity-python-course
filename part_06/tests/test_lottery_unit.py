@@ -2,7 +2,7 @@ from brownie import accounts, Lottery, network, config, exceptions
 from scripts.deploy_lottery import deploy_lottery, get_account, fund_contract_with_link
 from web3 import Web3
 import pytest
-from scripts.utils import LOCAL_BLOCKCHAIN_ENVIRONMENTS
+from scripts.utils import LOCAL_BLOCKCHAIN_ENVIRONMENTS, get_contract
 
 
 def skip_test_if_not_local_env():
@@ -94,3 +94,29 @@ def test_can_end_lottery():
 
     # ASSERT
     assert lottery.lottery_state() == 2
+
+
+def test_winner_is_picked_correctly():
+    # ARRANGE
+    skip_test_if_not_local_env()
+
+    RANDOM_NUM: int = 777
+
+    lottery = deploy_lottery()
+    account = get_account()
+    lottery.startLottery({"from": account})
+    lottery.enter({"from": account, "value": lottery.getEntranceFee()})
+    lottery.enter({"from": get_account(index=1), "value": lottery.getEntranceFee()})
+    lottery.enter({"from": get_account(index=2), "value": lottery.getEntranceFee()})
+    fund_contract_with_link(lottery)
+    # read event off of the blockchain
+    transaction = lottery.endLottery({"from": account})
+    request_id = transaction.events["RequestedRandomness"]["requestId"]
+    get_contract("vrf_coordinator").callBackWithRandomness(
+        request_id, RANDOM_NUM, lottery.address, {"from": account}
+    )
+    starting_balance_of_account: int = account.balance()
+    balance_of_lottery = lottery.balance()
+    assert lottery.recentWinner() == get_account()
+    assert lottery.balance() == 0
+    assert account.balance() == starting_balance_of_account + balance_of_lottery
