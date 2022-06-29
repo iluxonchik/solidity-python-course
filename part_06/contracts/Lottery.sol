@@ -34,6 +34,9 @@ contract Lottery is VRFConsumerBase, Ownable {
     uint256 public usdEntryFee;
     AggregatorV3Interface internal ethUsdPriceFeed;
     LOTTERY_STATE public lottery_state;
+    // events are stored on the blockchain, but not accessible by other smart contracts, only by reading
+    // directly off of the blockchain
+    event RequestedRandomness(bytes32 requestId);
 
     constructor(
         address _priceFeedAddress,
@@ -82,6 +85,7 @@ contract Lottery is VRFConsumerBase, Ownable {
     function endLottery() public onlyOwner openLottery {
         lottery_state = LOTTERY_STATE.CALCULATING_WINNER;
         bytes32 requestId = requestRandomness(keyhash, fee);
+        emit RequestedRandomness(requestId);
     }
 
     // After we request a random number from a Chanlink Node, we will need to wait for that node to callback a function
