@@ -74,7 +74,9 @@ def fund_contract_with_link(
     link_token = link_token if link_token is not None else get_contract("link_token")
     # transfer() vs spend(): https://ethereum.stackexchange.com/questions/19341/address-send-vs-address-transfer-best-practice-usage
     # instread of doing Contract.from_abi(), we can also use interfaces
-    tx = link_token.transfer(contract_addr, amount, {"from": account})
+    tx = link_token.transfer(
+        contract_addr, amount, {"from": account, "gas_limit": 2074044}
+    )
     # interface version:
     # link_token_contract = interface.LinkTokenInterface(link_token.address)
     # tx = link_token_contract.transfer(contract_addr, amount, {"from": account})
