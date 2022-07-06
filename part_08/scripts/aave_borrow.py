@@ -48,6 +48,42 @@ def main():
     tx.wait(1)
     print("Deposited!")
 
+    borrowable_eth, total_debt = get_borrowable_data(lending_pool, account)
+
+    print("Initiating borrowing process...")
+
+    dai_eth_price = get_asset_price(
+        config["networks"][network.show_active()]["dai_eth_price_feed"]
+    )
+
+    def get_asset_price(price_feed_address):
+        # TODO
+        pass
+
+
+def get_borrowable_data(lending_pool, account):
+    (
+        collateral,
+        borrows,
+        available_borrows,
+        liquidiation_threshold,
+        ltv,
+        health,
+    ) = lending_pool.getUserAccountData(account.address)
+
+    # the data above is returned in WEI, let's convert it to ETHER
+    collateral_eth = Web3.fromWei(collateral, "ether")
+    available_borrows_eth = Web3.fromWei(available_borrows, "ether")
+    borrows_eth = Web3.fromWei(borrows, "ether")
+    print(
+        f"""Your stats:
+        * {collateral_eth=}
+        * {available_borrows_eth=}
+        * {borrows_eth=}
+    """
+    )
+    return (float(available_borrows_eth), float(borrows_eth))
+
 
 def get_lending_pool():
     # When working wtih a contract, we need:
