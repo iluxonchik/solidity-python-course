@@ -55,10 +55,56 @@ def main():
     dai_eth_price = get_asset_price(
         config["networks"][network.show_active()]["dai_eth_price_feed"]
     )
+    # convert borrowable eth to 95% of borrowable dai
+    amound_dai_to_borrow = (1 / dai_eth_price) * (borrowable_eth * 0.95)
+    print(f"Going to borrow {amound_dai_to_borrow} DAI")
+    # the act of borrowing
+    dai_address = config["networks"][network.show_active()]["dai_token"]
+    tx = lending_pool.borrow(
+        dai_address,
+        amound_dai_to_borrow,
+        1,
+        0,
+        account.address,
+        {"from": account},
+    )
+    tx.wait(1)
+    print("We have borrowed some DAI!")
+    get_borrowable_data(lending_pool, account)
+    repay_all(AMOUNT, lending_pool, account)
+    print(
+        "Depositing, repaying, and borrowing done with AAVE, Brownie and Chainlink done!"
+    )
+    get_borrowable_data(lending_pool, account)
 
-    def get_asset_price(price_feed_address):
-        # TODO
-        pass
+
+def repay_all(amount, lending_pool, account):
+    approve_erc20(
+        lending_pool.address,
+        Web3.toWei(amount, "ether"),
+        config["networks"][network.show_active()]["dai_token"],
+        account,
+    )
+
+    repay_tx = lending_pool.repay(
+        config["networks"][network.show_active()]["dai_token"],
+        amount,
+        1,
+        account.address,
+        {"from": account},
+    )
+    repay_tx.wait(1)
+
+
+def get_asset_price(price_feed_address):
+    # As usual, when working with a smart contact, we'll need:
+    # 1. The Contract's Address (price_feed_address)
+    # 2. ABI (AggregatorV3Interface)
+    dai_eth_price_feed = interface.AggregatorV3Interface(price_feed_address)
+    latest_price = dai_eth_price_feed.latestRoundData()[1]
+    converted_latest_price = Web3.fromWei(latest_price, "ether")
+    print(f"DAI/ETH price is: {converted_latest_price}")
+    return float(converted_latest_price)
 
 
 def get_borrowable_data(lending_pool, account):
