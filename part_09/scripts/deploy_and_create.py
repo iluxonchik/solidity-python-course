@@ -7,7 +7,7 @@ SIMPLE_TOKEN_URI: str = (
 )
 
 
-def main():
+def deploy_and_create():
     account = get_account()
     simple_collectible = SimpleCollectible.deploy({"from": account})
     tx = simple_collectible.createCollectible(SIMPLE_TOKEN_URI, {"from": account})
@@ -15,3 +15,8 @@ def main():
     print(
         f"Your NFT is now available at: {OPENSEA_TESTNET_FORMAT.format(simple_collectible.address, simple_collectible.tokenCounter() - 1)}"
     )
+    return simple_collectible
+
+
+def main():
+    deploy_and_create()
