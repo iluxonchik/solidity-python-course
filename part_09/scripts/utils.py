@@ -25,7 +25,7 @@ CONTRACT_TO_MOCK: dict = {
 }
 
 
-def get_breed(breed_number):
+def get_breed(breed_number) -> str:
     return BREED_MAPPING[breed_number]
 
 
