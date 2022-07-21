@@ -1,4 +1,3 @@
-from lib2to3.pgen2.literals import simple_escapes
 from scripts.utils import (
     get_account,
     OPENSEA_TESTNET_FORMAT,
@@ -25,6 +24,10 @@ def deploy_and_create():
     tx = advanced_collectible.createCollectible({"from": account})
     tx.wait(1)
     print("Token has been created")
+    # returning the creating transaciton (tx) to get the request_id in the tests
+    # we are emitting an event on the creation transaction, and that event contains the request ID
+    # we are able to read the event emitted in a transaction from the transaction object
+    return advanced_collectible, tx
 
 
 def main():
