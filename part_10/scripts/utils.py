@@ -34,3 +34,39 @@ def encode_function_data(intializer=None, *args):
     if intializer:
         return intializer.encode_input(*args)
     return b""
+
+
+def upgrade(
+    account,
+    proxy,
+    new_implementation_addr,
+    proxy_admin_contract=None,
+    initializer=None,
+    *args
+):
+    encoded_function_call = (
+        encode_function_data(initializer, *args) if initializer else None
+    )
+    if proxy_admin_contract:
+        if encoded_function_call:
+            transaction = proxy_admin_contract.upgradeAndCall(
+                proxy.address,
+                new_implementation_addr,
+                encoded_function_call,
+                {"from": account},
+            )
+        else:
+            transaction = proxy_admin_contract.upgrade(
+                proxy.address,
+                new_implementation_addr,
+                {"from": account},
+            )
+    else:
+        # no proxy admin contract, which means we will call the proxy direclty from our account
+        if encoded_function_call:
+            transaction = proxy.upgradeToAndCall(
+                new_implementation_addr, encoded_function_call, {"from": account}
+            )
+        else:
+            transaction = proxy.upgradeTo(new_implementation_addr, {"from": account})
+    return transaction

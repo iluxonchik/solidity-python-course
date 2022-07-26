@@ -1,16 +1,17 @@
 from brownie import (
     Box,
-    TransparentUpgradeableProxy,
+    BoxV2,
+    Contract,
     ProxyAdmin,
+    TransparentUpgradeableProxy,
     config,
     network,
-    Contract,
 )
 
 
 def main():
 
-    from scripts.utils import get_account, encode_function_data
+    from scripts.utils import encode_function_data, get_account, upgrade
 
     account = get_account()
 
@@ -41,4 +42,20 @@ def main():
     print(f"Proxy deployed to {proxy}. It can now be upgraded to BoxV2")
     # let's point the original Box's ABI to be used in our proxy
     proxy_box = Contract.from_abi("Box", proxy.address, Box.abi)
+    tx = proxy_box.store(1, {"from": account})
+    tx.wait(1)
     print(f"{proxy_box.retrieve()=}")
+
+    # UPGRADE THE CONTRACT TO WHICH THE PROXY IS POINTING TO #
+    print(f"Deploying BoxV2 to {network.show_active()}")
+    box_v2 = BoxV2.deploy(
+        {"from": account},
+    )
+    tx = upgrade(account, proxy, box_v2.address, proxy_admin)
+    tx.wait(1)
+    print("Proxy upgraded to BoxV2!")
+    proxy_box = Contract.from_abi("BoxV2", proxy.address, BoxV2.abi)
+    print(f"Starting value: {proxy_box.retrieve()}")
+    tx = proxy_box.increment({"from": account})
+    tx.wait(1)
+    print(f"Ending value: {proxy_box.retrieve()}")
